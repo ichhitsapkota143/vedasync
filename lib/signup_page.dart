@@ -11,14 +11,15 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  String? _selectedRole;
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final _usernameController = TextEditingController();
-  final _nameController = TextEditingController();
   final _batchController = TextEditingController();
-
   String? _selectedProgram;
-  String? _selectedRole;
+  String? _selectedFaculty;
   bool _isSubmitting = false;
 
   final List<String> _programs = [
@@ -30,7 +31,12 @@ class _SignUpPageState extends State<SignUpPage> {
     'Architecture',
   ];
 
-  final List<String> _roles = ['Student', 'Teacher'];
+  final List<String> _faculties = [
+    'Architecture Department',
+    'BBA Department',
+    'ICT Department',
+    'Civil Department',
+  ];
 
   void _showMessage(String msg, {Color? color}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -38,27 +44,39 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Future<void> _submitRegistration() async {
+  Future<void> _submit() async {
+    final name = _nameController.text.trim();
+    final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    final username = _usernameController.text.trim();
-    final name = _nameController.text.trim();
-    final batch = _batchController.text.trim();
-    final program = _selectedProgram;
+    final confirmPassword = _confirmPasswordController.text.trim();
     final role = _selectedRole;
+    final batch = _batchController.text.trim();
 
-    if (email.isEmpty || !email.endsWith('@cosmoscollege.edu.np')) {
-      _showMessage('Only @cosmoscollege.edu.np emails allowed', color: Colors.red);
+    if ([name, username, email, password, confirmPassword, role].contains(null) ||
+        name.isEmpty || username.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      _showMessage('Please fill in all required fields', color: Colors.red);
       return;
     }
 
-    if (username.isEmpty || password.isEmpty || name.isEmpty || batch.isEmpty || program == null || role == null) {
-      _showMessage('Please fill all fields', color: Colors.red);
+    if (password != confirmPassword) {
+      _showMessage('Passwords do not match', color: Colors.red);
+      return;
+    }
+
+    final isTeacher = role == 'Teacher';
+
+    if (isTeacher && _selectedFaculty == null) {
+      _showMessage('Please select faculty', color: Colors.red);
+      return;
+    }
+
+    if (!isTeacher && (_selectedProgram == null || batch.isEmpty)) {
+      _showMessage('Please enter program and batch', color: Colors.red);
       return;
     }
 
     setState(() => _isSubmitting = true);
-    _showMessage('Registration successful! Redirecting...', color: Colors.green);
 
     try {
       final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -66,64 +84,64 @@ class _SignUpPageState extends State<SignUpPage> {
         password: password,
       );
 
-      await FirebaseFirestore.instance.collection('usernames').doc(username).set({
-        'uid': userCredential.user!.uid,
-        'email': email,
-        'name': name,
-        'batch': batch,
-        'program': program,
-        'role': role,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      final user = userCredential.user;
 
-      // Small delay for user to see the message
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const LandingPage(),
-            transitionsBuilder: (_, animation, __, child) {
-              final offsetAnimation = Tween<Offset>(
-                begin: const Offset(1.0, 0.0),
-                end: Offset.zero,
-              ).chain(CurveTween(curve: Curves.ease)).animate(animation);
-
-              return SlideTransition(position: offsetAnimation, child: child);
-            },
-          ),
-        );
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+        _showMessage('Verification email sent. Please check your inbox.', color: Colors.blue);
       }
+
+      final userData = {
+        'uid': user!.uid,
+        'name': name,
+        'email': email,
+        'role': role,
+        'username': username,
+        'createdAt': FieldValue.serverTimestamp(),
+        if (isTeacher)
+          'faculty': _selectedFaculty
+        else ...{
+          'program': _selectedProgram,
+          'batch': batch,
+        }
+      };
+
+      await FirebaseFirestore.instance
+          .collection('usernames')
+          .doc(username)
+          .set(userData);
+
     } on FirebaseAuthException catch (e) {
-      _showMessage(e.message ?? 'Registration failed', color: Colors.red);
-    } catch (e) {
-      _showMessage('Error: $e', color: Colors.red);
+      _showMessage(e.message ?? 'Signup failed', color: Colors.red);
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    bool obscureText = false,
-    TextInputType? keyboardType,
-  }) {
+  Widget _buildInput(TextEditingController controller, String label, {bool obscure = false}) {
     return TextField(
       controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-      ),
+      obscureText: obscure,
+      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isTeacher = _selectedRole == 'Teacher';
+    final isStudent = _selectedRole == 'Student';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
+      appBar: AppBar(
+        title: const Text('Sign Up'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const LandingPage()),
+          ),
+        ),
+      ),
       body: _isSubmitting
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -131,55 +149,60 @@ class _SignUpPageState extends State<SignUpPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildInputField(
-              controller: _emailController,
-              label: 'Email (@cosmoscollege.edu.np)',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            _buildInputField(
-              controller: _passwordController,
-              label: 'Password',
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            _buildInputField(controller: _nameController, label: 'Full Name'),
-            const SizedBox(height: 16),
-            _buildInputField(controller: _usernameController, label: 'Username'),
-            const SizedBox(height: 16),
-            _buildInputField(controller: _batchController, label: 'Batch'),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedProgram,
-              items: _programs.map((program) {
-                return DropdownMenuItem(value: program, child: Text(program));
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedProgram = value),
-              decoration: const InputDecoration(
-                labelText: 'Program',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _selectedRole,
-              items: _roles.map((role) {
-                return DropdownMenuItem(value: role, child: Text(role));
-              }).toList(),
+              items: const [
+                DropdownMenuItem(value: 'Student', child: Text('Student')),
+                DropdownMenuItem(value: 'Teacher', child: Text('Teacher')),
+              ],
               onChanged: (value) => setState(() => _selectedRole = value),
               decoration: const InputDecoration(
-                labelText: 'Role',
+                labelText: 'Select Role',
                 border: OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 16),
+            _buildInput(_nameController, 'Full Name'),
+            const SizedBox(height: 16),
+            _buildInput(_usernameController, 'Username'),
+            const SizedBox(height: 16),
+            _buildInput(_emailController, 'Email'),
+            const SizedBox(height: 16),
+            _buildInput(_passwordController, 'Password', obscure: true),
+            const SizedBox(height: 16),
+            _buildInput(_confirmPasswordController, 'Confirm Password', obscure: true),
+            const SizedBox(height: 16),
+            if (isTeacher)
+              DropdownButtonFormField<String>(
+                value: _selectedFaculty,
+                items: _faculties.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                onChanged: (value) => setState(() => _selectedFaculty = value),
+                decoration: const InputDecoration(
+                  labelText: 'Faculty',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            if (isStudent) ...[
+              DropdownButtonFormField<String>(
+                value: _selectedProgram,
+                items: _programs.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
+                onChanged: (value) => setState(() => _selectedProgram = value),
+                decoration: const InputDecoration(
+                  labelText: 'Program',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildInput(_batchController, 'Batch'),
+            ],
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: _isSubmitting ? null : _submitRegistration,
-              icon: const Icon(Icons.check_circle_outline),
+              onPressed: _submit,
+              icon: const Icon(Icons.check_circle),
               label: const Text('Register'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4A90E2),
                 padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: const Color(0xFF4A90E2),
               ),
             ),
           ],
