@@ -8,7 +8,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+<<<<<<< HEAD
 import 'package:vedasync/main.dart';
+=======
+import 'package:veda_sync/main.dart';
+>>>>>>> be1cdf5 (Teacher Dashboard omePage Functionality)
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {

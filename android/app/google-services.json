@@ -12,6 +12,7 @@
           "package_name": "com.example.vedasync"
         }
       },
+<<<<<<< HEAD
       "oauth_client": [
         {
           "client_id": "728831048887-s0hruvtd2q3o4j92t84uov3ti7v2gllc.apps.googleusercontent.com",
@@ -26,6 +27,9 @@
           "client_type": 3
         }
       ],
+=======
+      "oauth_client": [],
+>>>>>>> be1cdf5 (Teacher Dashboard omePage Functionality)
       "api_key": [
         {
           "current_key": "AIzaSyAm7cuvEmi4aI0LwjO3GOaJgIS4aBa6HX8"
@@ -33,12 +37,16 @@
       ],
       "services": {
         "appinvite_service": {
+<<<<<<< HEAD
           "other_platform_oauth_client": [
             {
               "client_id": "728831048887-403jmht8m3hp29fd8sbki7e90clk68vn.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
+=======
+          "other_platform_oauth_client": []
+>>>>>>> be1cdf5 (Teacher Dashboard omePage Functionality)
         }
       }
     }

@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
     "name": "vedasync",
     "short_name": "vedasync",
+=======
+    "name": "veda_sync",
+    "short_name": "veda_sync",
+>>>>>>> be1cdf5 (Teacher Dashboard omePage Functionality)
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # vedasync
+=======
+# veda_sync
+>>>>>>> be1cdf5 (Teacher Dashboard omePage Functionality)
 
 A new Flutter project.
 

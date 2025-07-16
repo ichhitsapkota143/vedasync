@@ -90,12 +90,21 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
+<<<<<<< HEAD
             VALUE "FileDescription", "vedasync" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "vedasync" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "vedasync.exe" "\0"
             VALUE "ProductName", "vedasync" "\0"
+=======
+            VALUE "FileDescription", "veda_sync" "\0"
+            VALUE "FileVersion", VERSION_AS_STRING "\0"
+            VALUE "InternalName", "veda_sync" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
+            VALUE "OriginalFilename", "veda_sync.exe" "\0"
+            VALUE "ProductName", "veda_sync" "\0"
+>>>>>>> be1cdf5 (Teacher Dashboard omePage Functionality)
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

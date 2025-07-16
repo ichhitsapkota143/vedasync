@@ -3,8 +3,11 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+<<<<<<< HEAD
   cloud_firestore
   firebase_auth
+=======
+>>>>>>> be1cdf5 (Teacher Dashboard omePage Functionality)
   firebase_core
 )
 
