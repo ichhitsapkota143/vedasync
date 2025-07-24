@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "728831048887",
+    "project_id": "vedasync-96ced",
+    "storage_bucket": "vedasync-96ced.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728831048887:android:e2b60a3ef1749391d62132",
+        "android_client_info": {
+          "package_name": "com.example.vedasync"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAm7cuvEmi4aI0LwjO3GOaJgIS4aBa6HX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
